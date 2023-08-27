@@ -1,5 +1,24 @@
 
+:toc:
 
+:icons: font
+
+// 保证所有的目录层级都可以正常显示图片
+:path: instruction/
+:imagesdir: ../image/
+:srcdir: ../src
+
+
+// 只有book调用的时候才会走到这里
+ifdef::rootpath[]
+:imagesdir: {rootpath}{path}{imagesdir}
+:srcdir: {rootpath}../src/
+endif::rootpath[]
+
+ifndef::rootpath[]
+:rootpath: ../
+:srcdir: {rootpath}{path}../src/
+endif::rootpath[]
 
 
 ## Files

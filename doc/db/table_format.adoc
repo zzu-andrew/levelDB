@@ -1,12 +1,10 @@
 
-
-
 :toc:
 
 :icons: font
 
 // 保证所有的目录层级都可以正常显示图片
-:path: persistence/
+:path: db/
 :imagesdir: ../image/
 :srcdir: ../src
 
