@@ -1,3 +1,29 @@
+
+
+
+:toc:
+
+:icons: font
+
+// 保证所有的目录层级都可以正常显示图片
+:path: persistence/
+:imagesdir: ../image/
+:srcdir: ../src
+
+
+// 只有book调用的时候才会走到这里
+ifdef::rootpath[]
+:imagesdir: {rootpath}{path}{imagesdir}
+:srcdir: {rootpath}../src/
+endif::rootpath[]
+
+ifndef::rootpath[]
+:rootpath: ../
+:srcdir: {rootpath}{path}../src/
+endif::rootpath[]
+
+
+
 leveldb Log format
 ==================
 The log file contents are a sequence of 32KB blocks.  The only exception is that
@@ -73,3 +99,5 @@ bytes free in the third block, which will be left empty as the trailer.
    format.
 
 2. No compression.  Again, this could be fixed by adding new record types.
+
+

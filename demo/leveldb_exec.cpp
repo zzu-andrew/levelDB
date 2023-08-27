@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
     auto s = db->Put(leveldb::WriteOptions(), key1, value);
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 100; ++i) {
         std::string key = to_string(i);
         std::string valStr = to_string(i + 2);
         s = db->Put(leveldb::WriteOptions(), key, valStr);

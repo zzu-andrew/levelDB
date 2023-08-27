@@ -1,3 +1,28 @@
+
+
+
+:toc:
+
+:icons: font
+
+// 保证所有的目录层级都可以正常显示图片
+:path: persistence/
+:imagesdir: ../image/
+:srcdir: ../src
+
+
+// 只有book调用的时候才会走到这里
+ifdef::rootpath[]
+:imagesdir: {rootpath}{path}{imagesdir}
+:srcdir: {rootpath}../src/
+endif::rootpath[]
+
+ifndef::rootpath[]
+:rootpath: ../
+:srcdir: {rootpath}{path}../src/
+endif::rootpath[]
+
+
 leveldb File format
 ===================
 
@@ -105,3 +130,4 @@ TODO(postrelease): record following stats.
     value size (uncompressed)
     number of entries
     number of data blocks
+
