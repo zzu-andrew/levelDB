@@ -30,12 +30,9 @@ leveldb库提供了一个持久的键值存储。键和值可以是任意字节�
 ____
 
 
-== instruction
 
 include::instruction/readme.adoc[readme]
 include::instruction/impl.adoc[impl]
-
-== persistent
 
 include::persistence/log_format.adoc[log_format]
 

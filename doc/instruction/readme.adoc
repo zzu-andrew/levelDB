@@ -20,23 +20,20 @@ ifndef::rootpath[]
 :srcdir: {rootpath}{path}../src/
 endif::rootpath[]
 
+== 引言
 
-**LevelDB is a fast key-value storage library written at Google that provides an ordered mapping from string keys to string values.**
 
-[![ci](https://github.com/google/leveldb/actions/workflows/build.yml/badge.svg)](https://github.com/google/leveldb/actions/workflows/build.yml)
+=== 特性
 
-Authors: Sanjay Ghemawat (sanjay@google.com) and Jeff Dean (jeff@google.com)
-
-# Features
-
-* Keys and values are arbitrary byte arrays.
-* Data is stored sorted by key.
-* Callers can provide a custom comparison function to override the sort order.
-* The basic operations are `Put(key,value)`, `Get(key)`, `Delete(key)`.
-* Multiple changes can be made in one atomic batch.
-* Users can create a transient snapshot to get a consistent view of data.
-* Forward and backward iteration is supported over the data.
-* Data is automatically compressed using the [Snappy compression library](https://google.github.io/snappy/).
+* Keys 和 values 可以是任意长度的数组
+* 数据按照key值进行存储.
+* 用户可以根据需要提供一个对比函数来实现对Key值的排序
+* 向外提供了 `Put(key,value)`, `Get(key)`, `Delete(key)` 等接口
+* 支持事务
+* 用户可以创建快照
+* 支持按照迭代器遍历数据
+* https://google.github.io/snappy[数据库会自动使用Snappy库对数据进行压缩]
+*
 * External activity (file system operations etc.) is relayed through a virtual interface so users can customize the operating system interactions.
 
 # Documentation
