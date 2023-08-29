@@ -59,7 +59,7 @@ endif::rootpath[]
 
 使用 `static Status Open(const Options &options, const std::string &name, DB **dbptr)` 可以打开一个数据库， options填入数据库打开选项，name指定数据库名，DB给出一个数据库指针(原先指向nullptr)，因为调用之后会把创建的数据库句柄赋值给对应的指针。
 
-- Options 用来控制数据库行为的一些参数在调用 `DB::Open` 的时候使用。
+- Options 用来控制数据库行为的一些参数在调用 `DB::Open` 的时候使用，下面试Options的说明
 
 [source,c++]
 ----

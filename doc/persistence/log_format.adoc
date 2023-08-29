@@ -78,7 +78,7 @@ bytes free in the third block, which will be left empty as the trailer.
 
 **C** will be stored as a FULL record in the fourth block.
 
-----
+
 
 ## Some benefits over the recordio format:
 

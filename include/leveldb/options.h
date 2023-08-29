@@ -34,33 +34,25 @@ namespace leveldb {
         kSnappyCompression = 0x1
     };
 
-// Options to control the behavior of a database (passed to DB::Open)
+// Options 通过传入给 DB::OPen 来控制数据库行为
     struct LEVELDB_EXPORT Options {
-        // Create an Options object with default values for all fields.
+        // 使用默认值构造Options
         Options();
 
-        // -------------------
-        // Parameters that affect behavior
-
-        // Comparator used to define the order of keys in the table.
-        // Default: a comparator that uses lexicographic byte-wise ordering
-        //
-        // REQUIRES: The client must ensure that the comparator supplied
-        // here has the same name and orders keys *exactly* the same as the
-        // comparator provided to previous open calls on the same DB.
+        // Comparator 用来定义keys值在table中的排序方式
+        // Default: 默认提供的对比工具是按照字典顺序进行排序的，也就是字典中字幕的排列顺序进行排序
+        // 需要用户保证所有打开数据的对比工具都是一致的
         const Comparator *comparator;
 
-        // If true, the database will be created if it is missing.
+        // 如果设置为true，当数据库丢失时会创建一个新的数据库
         bool create_if_missing = false;
 
-        // If true, an error is raised if the database already exists.
+        // 如果设置为true，当同名数据库已经存在就直接报错
         bool error_if_exists = false;
 
-        // If true, the implementation will do aggressive checking of the
-        // data it is processing and will stop early if it detects any
-        // errors.  This may have unforeseen ramifications: for example, a
-        // corruption of one DB entry may cause a large number of entries to
-        // become unreadable or for the entire DB to become unopenable.
+        // 如果设置为true，将会实现对正在设置的数据进行检查，如果检测到任何错误将会提前停止
+        // 这可能会导致不可预料的异常，例如：一个损坏的DB表项，可能造成大量的DB表项不可读
+        // 甚至导致整个数据库不可打开
         bool paranoid_checks = false;
 
         // Use the specified object to interact with the environment,
