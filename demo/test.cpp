@@ -8,19 +8,28 @@
 #include <string>
 #include <algorithm>
 
+#include <type_traits>
+#include <utility>
+
 using namespace std;
+
+
 
 const uint64_t CREATE_SQL_STR_LEN = 1024 * 1024;
 
 int main(int argc, char *argv[]) {
 
-    char lpCreateSQL[CREATE_SQL_STR_LEN];
-    memset(lpCreateSQL, 0 , sizeof(lpCreateSQL));
 
-    auto nRet = snprintf(lpCreateSQL, CREATE_SQL_STR_LEN, "%s", "create virtual table ");
+    struct sql {
+        sql() {std::cout << "==========" << std::endl;}
+        uint64_t data;
+        int sql_;
+        char name[CREATE_SQL_STR_LEN];
+        char tea;
+    };
 
-    nRet += snprintf(lpCreateSQL + nRet, CREATE_SQL_STR_LEN- nRet, "%s", "create virtual table ");
-    nRet += snprintf(lpCreateSQL + nRet, CREATE_SQL_STR_LEN- nRet, "%s", "create virtual table ");
+    typename std::aligned_storage<sizeof(sql),
+            alignof(sql)>::type instance_storage_;
 
 
     return 0;

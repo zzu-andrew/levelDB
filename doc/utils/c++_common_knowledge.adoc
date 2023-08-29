@@ -1,0 +1,116 @@
+
+:toc:
+
+:icons: font
+
+// 保证所有的目录层级都可以正常显示图片
+:path: utils/
+:imagesdir: ../image/
+:srcdir: ../src
+
+
+// 只有book调用的时候才会走到这里
+ifdef::rootpath[]
+:imagesdir: {rootpath}{path}{imagesdir}
+:srcdir: {rootpath}../src/
+endif::rootpath[]
+
+ifndef::rootpath[]
+:rootpath: ../
+:srcdir: {rootpath}{path}../src/
+endif::rootpath[]
+
+
+== Common Knowledge
+
+在学习levelDB数据库的时候，可能遇见一些平常并不是很常见但是很实用的知识点，这里会对这些知识点进行总结。
+
+=== 如何优雅创建一个实例
+
+在创建数据库时，需要传入 `Options` 该对象在构造的时候需要传入一个对比工具，levelDB中数据库不支持并发，因此在进行创建数据库时每个数据库句柄都是创建之后一直到停止使用结束的，那么这个对比工具也是要保证数据库有效的时间内都能正常使用。
+
+这个时候单例模式就体现出作用来了，这里levelDB使用了经典的饿汉式单例创建方式。这个单例创建模式没有什么新颖的地方，最主要的在这个示例对象中有需要学习的地方。
+
+[source, cpp]
+----
+const Comparator *BytewiseComparator() {
+        static NoDestructor<BytewiseComparatorImpl> singleton;
+        return singleton.get();
+    }
+----
+
+- `alignof` 去对其长度，准确的来说就是一个结构体中对齐长度，比如下面的结构体：
+
+[source, cpp]
+----
+struct sql {
+    uint64_t data;
+    int sql_;
+    char name[CREATE_SQL_STR_LEN];
+    char tea;
+};
+----
+
+`alignof(sql)` 返回的结果就是8，也就是这个结构体需要按照8字节对其，当我们去除uint64_t的时候，再求对齐长度就会变成4，也就是一个结构体中按照最长位的那个类型进行对齐。
+
+- 使用 `new (ptr) T(args)` 特性来实现对象的申请，当我们申请一个对象时，如果想要使用自己指定的内存来存储对象，就可以使用new提供的placement方法来事先，使用方法就是new 后面紧跟一个小括号，并在小括号中放入你想存放对象的内存地址。
+- 使用 `aligned_storage` 来确保定在定义的数据对象占用内存大小，肯定大于需要对外提供内存的大小。
+
+aligned_storage是C++标准库中的一个模板类，定义在<type_traits>头文件中。它提供了一种用于按照指定对齐要求分配内存的机制。
+
+aligned_storage模板类的定义如下：
+[souece, cpp]
+----
+template <std::size_t Len, std::size_t Align>
+struct aligned_storage;
+----
+其中，Len表示所需的内存大小，Align表示所需的对齐要求。
+
+aligned_storage模板类在需要手动控制内存对齐的情况下非常有用。它提供了一种安全和便捷的方式来分配按照指定对齐要求的内存块，并可以通过类型别名来使用这个内存块。
+
+需要注意的是，aligned_storage只提供了对齐内存的分配，但不会自动构造和析构对象。如果需要在对齐内存中存储对象，还需要进行适当的构造和析构操作。
+
+*最终代码实现效果*
+[source, cpp]
+----
+// Wraps an instance whose destructor is never called.
+//
+// This is intended for use with function-level static variables.
+template <typename InstanceType>
+class NoDestructor {
+    public:
+    template <typename... ConstructorArgTypes>
+    explicit NoDestructor(ConstructorArgTypes&&... constructor_args) {
+    static_assert(sizeof(instance_storage_) >= sizeof(InstanceType),
+                  "instance_storage_ is not large enough to hold the instance");
+    static_assert(
+        alignof(decltype(instance_storage_)) >= alignof(InstanceType),
+        "instance_storage_ does not meet the instance's alignment requirement");
+    new (&instance_storage_)
+        InstanceType(std::forward<ConstructorArgTypes>(constructor_args)...);
+    }
+
+    ~NoDestructor() = default;
+
+    NoDestructor(const NoDestructor&) = delete;
+    NoDestructor& operator=(const NoDestructor&) = delete;
+
+    InstanceType* get() {
+        return reinterpret_cast<InstanceType*>(&instance_storage_);
+    }
+
+    private:
+    // 注意这里只是申请了一块 >= 指定大小的内存，并不会调用对应对象的构造函数，在对象声明周期结束时也不会调用对象的析构函数，都需要用户自己手动调用
+    typename std::aligned_storage<sizeof(InstanceType),
+                                alignof(InstanceType)>::type instance_storage_;
+};
+
+----
+
+*总结*
+
+这一个实例的创建使用了三个比较重要的C++知识点，alignof取结构体对齐长度，`new（placement new）` 来实现预分配内存的new，在结合 `aligned_storage` 来保证已有对象内存绝对大于等于需要申请对象的内存，然后经过饿汉式单例模式封装，经过以上几个步骤之后，一个能长久陪伴数据库句柄的对比工具便诞生了。
+
+
+
+
