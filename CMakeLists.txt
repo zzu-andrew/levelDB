@@ -7,9 +7,11 @@ cmake_minimum_required(VERSION 3.9)
 project(leveldb VERSION 1.23.0 LANGUAGES C CXX)
 
 # C standard can be overridden when this is used as a sub-project.
+# 看是否设置过CMAKE_C_STANDARD
 if (NOT CMAKE_C_STANDARD)
     # This project can use C11, but will gracefully decay down to C89.
     set(CMAKE_C_STANDARD 11)
+    # 是否支持C语言扩展的非标准语法 通过将 CMAKE_C_EXTENSIONS 设置为 OFF，可以增强代码的可移植性，确保代码在不同的编译器和平台上都以标准的 C 语言规范进行编译。
     set(CMAKE_C_STANDARD_REQUIRED OFF)
     set(CMAKE_C_EXTENSIONS OFF)
 endif (NOT CMAKE_C_STANDARD)
@@ -18,7 +20,9 @@ endif (NOT CMAKE_C_STANDARD)
 if (NOT CMAKE_CXX_STANDARD)
     # This project requires C++11.
     set(CMAKE_CXX_STANDARD 11)
+
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    # 是否支持C++扩展的非标准语法
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif (NOT CMAKE_CXX_STANDARD)
 

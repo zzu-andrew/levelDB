@@ -70,44 +70,35 @@ namespace leveldb {
         // 状态。一个大的写缓存可能会导致比较长的数据库恢复时间
         size_t write_buffer_size = 4 * 1024 * 1024;
 
-        // Number of open files that can be used by the DB.  You may need to
-        // increase this if your database has a large working set (budget
-        // one open file per 2MB of working set).
+        // 数据库允许打开文件的最大数量，当你预估数据库存储的内容可能会很大时，可以根据需要适当增大该值
+        // 进行预算时，按照每2M内容一个文件来进行预算
         int max_open_files = 1000;
 
-        // Control over blocks (user data is stored in a set of blocks, and
-        // a block is the unit of reading from disk).
-
-        // If non-null, use the specified cache for blocks.
-        // If null, leveldb will automatically create and use an 8MB internal cache.
+        // 控制blocks，DB会将用户的数据存储成一系列的blocks，一个block是一个从磁盘中加载的单元
+        // 如果非空，会使用用户指定的Cache，如果为空，levelDB会创建一个默认的8M的内部Cache
         Cache *block_cache = nullptr;
 
-        // Approximate size of user data packed per block.  Note that the
-        // block size specified here corresponds to uncompressed data.  The
-        // actual size of the unit read from disk may be smaller if
-        // compression is enabled.  This parameter can be changed dynamically.
+        // 用来指定每个block用户数据的大小，这些大小都是数据压缩之前的大小
+        // 当压缩之后存储在磁盘上的数据可能远小于这个值的大小(如果启用了压缩功能)，该值可以根据需要动态的进行改变
         size_t block_size = 4 * 1024;
 
-        // Number of keys between restart points for delta encoding of keys.
-        // This parameter can be changed dynamically.  Most clients should
-        // leave this parameter alone.
+        //在 LevelDB 中，block_restart_interval 是用于控制块重启的变量。LevelDB 使用块（block）来组织和存储数据，
+        // 每个块是一个数据块，包含多个键值对。block_restart_interval 确定了在块中重新启动（restart）前的连续键值对的数量。
+        //在 LevelDB 的块中，每个重新启动点都需要存储键的前缀，这样可以在搜索和查找操作中更快地定位到特定的键。
+        // 重新启动点是为了减少在每个键值对中存储完整键的开销。
+        //block_restart_interval 变量定义了在一个块中连续键值对的数量。
+        // 当达到 block_restart_interval 时，LevelDB 将创建一个新的重新启动点，并存储相应的键前缀。
+        // 这样，在进行查找时，LevelDB 可以根据重新启动点的位置快速定位到特定的键。
+        //通过调整 block_restart_interval 的值，可以在性能和空间消耗之间进行权衡。
+        // 大部分客户可能用不到该值
         int block_restart_interval = 16;
 
-        // Leveldb will write up to this amount of bytes to a file before
-        // switching to a new one.
-        // Most clients should leave this parameter alone.  However if your
-        // filesystem is more efficient with larger files, you could
-        // consider increasing the value.  The downside will be longer
-        // compactions and hence longer latency/performance hiccups.
-        // Another reason to increase this parameter might be when you are
-        // initially populating a large database.
+        // leveldb会创建文件用于记录数据，该值制定了每个文件的大小，在每次将要超过该值时，levelDB会创建新的文件
+        // 大部分客户端应该保持改制不变，但是当你的系统对大文件更加高效的时候，你应该考虑适当的增加该值的大小
         size_t max_file_size = 2 * 1024 * 1024;
 
-        // Compress blocks using the specified compression algorithm.  This
-        // parameter can be changed dynamically.
-        //
-        // Default: kSnappyCompression, which gives lightweight but fast
-        // compression.
+        // 用来指定压缩算法，可以动态修改
+        // 默认: kSnappyCompression压缩算法，能给出极速但是轻量级压缩.
         //
         // Typical speeds of kSnappyCompression on an Intel(R) Core(TM)2 2.4GHz:
         //    ~200-500MB/s compression
@@ -125,9 +116,8 @@ namespace leveldb {
         // Default: currently false, but may become true later.
         bool reuse_logs = false;
 
-        // If non-null, use the specified filter policy to reduce disk reads.
-        // Many applications will benefit from passing the result of
-        // NewBloomFilterPolicy() here.
+        // 使用指定的过滤条件，来讲减少对磁盘的访问(设置为NewBloomFilterPolicy之后，能很大程度的减少对磁盘的访问次数)
+        // NewBloomFilterPolicy()
         const FilterPolicy *filter_policy = nullptr;
     };
 

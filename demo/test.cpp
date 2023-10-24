@@ -10,9 +10,11 @@
 
 #include <type_traits>
 #include <utility>
+#include <thread>
+#include <set>
+
 
 using namespace std;
-
 
 
 const uint64_t CREATE_SQL_STR_LEN = 1024 * 1024;
@@ -20,16 +22,23 @@ const uint64_t CREATE_SQL_STR_LEN = 1024 * 1024;
 int main(int argc, char *argv[]) {
 
 
-    struct sql {
-        sql() {std::cout << "==========" << std::endl;}
-        uint64_t data;
-        int sql_;
-        char name[CREATE_SQL_STR_LEN];
-        char tea;
-    };
+    std::set<std::string> newSet{};
+    newSet.insert("3");
+    newSet.insert("4");
+    newSet.insert("5");
+    newSet.insert("7");
+    newSet.insert("1");
+    newSet.insert("2");
+    newSet.insert("2");
 
-    typename std::aligned_storage<sizeof(sql),
-            alignof(sql)>::type instance_storage_;
+
+    for (auto& s : newSet) {
+        std::cout << s << std::endl;
+    }
+
+
+
+
 
 
     return 0;
