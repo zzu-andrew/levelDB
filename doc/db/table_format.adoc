@@ -21,8 +21,7 @@ ifndef::rootpath[]
 endif::rootpath[]
 
 
-leveldb File format
-===================
+== leveldb File format
 
     <beginning_of_file>
     [data block 1]
@@ -37,7 +36,7 @@ leveldb File format
     [Footer]        (fixed size; starts at file_size - sizeof(Footer))
     <end_of_file>
 
-The file contains internal pointers.  Each such pointer is called
+The file contains internal pointers.Each such pointer is called
 a BlockHandle and contains the following information:
 
     offset:   varint64

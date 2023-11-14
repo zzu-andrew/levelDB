@@ -148,7 +148,7 @@ options.error_if_exists = true;
 
 === 执行结果 Status
 
-在levelBD中你随处可见Status，该对象就是levelDB对返回值进行封装时候的结果，用来返回各种接口的执行情况
+在levelDB中你随处可见Status，该对象就是levelDB对返回值进行封装时候的结果，用来返回各种接口的执行情况
 
 [source, cpp]
 ----
@@ -157,35 +157,41 @@ if (!s.ok()) cerr << s.ToString() << endl;
 ----
 
 
-## Closing A Database
+== 如何关闭一个levelDB数据库
 
-When you are done with a database, just delete the database object. Example:
+当想关闭一个levelDB数据库时只需要调用delete将db删除即可。
 
-```c++
+[source,c++]
+----
 ... open the db as described above ...
 ... do something with db ...
 delete db;
-```
+----
 
-## Reads And Writes
+== 数据库的读写
 
-The database provides Put, Delete, and Get methods to modify/query the database.
-For example, the following code moves the value stored under key1 to key2.
+levelDB提供了Put/Delete/Get等接口来对数据库进行操作。
 
-```c++
+[source,c++]
+----
 std::string value;
+// 1. 去除key1的值
 leveldb::Status s = db->Get(leveldb::ReadOptions(), key1, &value);
+// 将key2的值设置为key1的值
 if (s.ok()) s = db->Put(leveldb::WriteOptions(), key2, value);
+// 删除key1
 if (s.ok()) s = db->Delete(leveldb::WriteOptions(), key1);
-```
+----
 
-## Atomic Updates
+== 原子操作(事务类型)
 
-Note that if the process dies after the Put of key2 but before the delete of
-key1, the same value may be left stored under multiple keys. Such problems can
-be avoided by using the `WriteBatch` class to atomically apply a set of updates:
+[listing]
+....
+上述将Key1的值设置给key2并删除Key1总共经过了三步，如果在删除key1之前数据库崩溃或被强制停掉了就会导致value存在key1和key2中。为了避免这种异常情况的出现，我们可以将上述三种情况作为一个原子操作。levelDB中可以通过WriteBatch来实现对多个步骤进行原子操作
+....
 
-```c++
+[source,c++]
+----
 #include "leveldb/write_batch.h"
 ...
 std::string value;
@@ -196,10 +202,10 @@ if (s.ok()) {
   batch.Put(key2, value);
   s = db->Write(leveldb::WriteOptions(), &batch);
 }
-```
+----
 
 The `WriteBatch` holds a sequence of edits to be made to the database, and these
-edits within the batch are applied in order. Note that we called Delete before
+edits within the batch are applied in order.Note that we called Delete before
 Put so that if key1 is identical to key2, we do not end up erroneously dropping
 the value entirely.
 

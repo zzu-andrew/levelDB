@@ -107,6 +107,16 @@ class NoDestructor {
 
 ----
 
+
+=== sizeof
+
+需要注意的是，sizeof中* + 指针变量，并不是对指针变量的解引用，只是去除指针指向对象类型的意思，因此下面的代码并不会崩溃，而是给出指针指向对象的大小。
+[source, cpp]
+----
+int *lpData = nullptr;
+std::cout << sizeof(*lpData) << std::endl;
+----
+
 *总结*
 
 在整个levelDB中有很多地方都用了这个特性进行单例的创建，在这个实例的创建中使用了三个比较重要的C++知识点，alignof取结构体对齐长度，`new（placement new）` 来实现预分配内存的new，在结合 `aligned_storage` 来保证已有对象内存绝对大于等于需要申请对象的内存，然后经过饿汉式单例模式封装，经过以上几个步骤之后，一个能长久陪伴数据库句柄的对比工具便诞生了。

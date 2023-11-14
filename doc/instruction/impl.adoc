@@ -21,48 +21,8 @@ ifndef::rootpath[]
 endif::rootpath[]
 
 
-## Files
+== 基本概念
 
-
-### Log files
-
-
-
-## Sorted tables
-
-
-
-### Manifest
-
-
-### Current
-
-
-### Info logs
-
-
-### Others
-
-
-## Level 0
-
-
-
-## Compactions
-
-
-
-### Timing
-
-
-### Number of files
-
-
-## Recovery
-
-
-
-## Garbage collection of files
 
 
 
