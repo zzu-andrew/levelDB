@@ -204,15 +204,11 @@ if (s.ok()) {
 }
 ----
 
-The `WriteBatch` holds a sequence of edits to be made to the database, and these
-edits within the batch are applied in order.Note that we called Delete before
-Put so that if key1 is identical to key2, we do not end up erroneously dropping
-the value entirely.
+每个WriteBatch对象中能包含一系列按照顺序排列的操作，当调用Write接口时，会按照顺序原子的执行WriteBatch的所有操作。
 
-Apart from its atomicity benefits, `WriteBatch` may also be used to speed up
-bulk updates by placing lots of individual mutations into the same batch.
+WriteBatch将一些列动作封装成一个原子操作，当需要对数据库进行多次修改时，可以将这些操作封装成一个batch，这样能有效加快这些更改。
 
-## Synchronous Writes
+== Synchronous Writes
 
 By default, each write to leveldb is asynchronous: it returns after pushing the
 write from the process into the operating system. The transfer from operating
