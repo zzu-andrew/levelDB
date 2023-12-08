@@ -21,8 +21,10 @@ int main(int argc, char *argv[]) {
     // 数据库的读写
     std::string value = "value";
     std::string key1 = "key1";
+    leveldb::WriteOptions write_options;
+    write_options.sync = true;
 
-    auto s = db->Put(leveldb::WriteOptions(), key1, value);
+    auto s = db->Put(write_options, key1, value);
 
     for (int i = 0; i < 100; ++i) {
         std::string key = to_string(i);

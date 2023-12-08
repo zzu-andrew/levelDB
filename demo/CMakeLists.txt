@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
 # Keep the version below in sync with the one in db.h
-project(leveldb VERSION 1.23.0 LANGUAGES C CXX)
 
 
 
@@ -19,4 +18,8 @@ target_link_libraries(test
         PUBLIC leveldb)
 
 target_include_directories(test
-        PUBLIC ${PROJECT_SOURCE_DIR}/../include)
+        PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+
+# 添加各个算法测试代码
+add_subdirectory(batch_test)

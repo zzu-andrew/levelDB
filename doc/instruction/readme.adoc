@@ -208,29 +208,18 @@ if (s.ok()) {
 
 WriteBatch将一些列动作封装成一个原子操作，当需要对数据库进行多次修改时，可以将这些操作封装成一个batch，这样能有效加快这些更改。
 
-== Synchronous Writes
+== 同步写
 
-By default, each write to leveldb is asynchronous: it returns after pushing the
-write from the process into the operating system. The transfer from operating
-system memory to the underlying persistent storage happens asynchronously. The
-sync flag can be turned on for a particular write to make the write operation
-not return until the data being written has been pushed all the way to
-persistent storage. (On Posix systems, this is implemented by calling either
-`fsync(...)` or `fdatasync(...)` or `msync(..., MS_SYNC)` before the write
-operation returns.)
+每次levelDB的写操作其实都是异步的，当调用完系统接口之后接口就会返回，这时文件只是到系统内存并没有进行持久化，但是系统内存到真正的持久化之间是异步执行的。当需要接口同步写时可以将sync flag设置给put的WriteOptions，这样就能保证接口返回之前已经将值都写入到持久化文件里了。(在UNIX系统上是通过在写操作返回之前调用`fsync(...)` or `fdatasync(...)` or `msync(..., MS_SYNC)`等接口实现。)
 
-```c++
+[source,c++]
+----
 leveldb::WriteOptions write_options;
 write_options.sync = true;
 db->Put(write_options, ...);
-```
+----
 
-Asynchronous writes are often more than a thousand times as fast as synchronous
-writes. The downside of asynchronous writes is that a crash of the machine may
-cause the last few updates to be lost. Note that a crash of just the writing
-process (i.e., not a reboot) will not cause any loss since even when sync is
-false, an update is pushed from the process memory into the operating system
-before it is considered done.
+异步写的速度是同步写的千倍左右，异步写的问题就是系统崩溃时可能会丢失部分数据。
 
 Asynchronous writes can often be used safely. For example, when loading a large
 amount of data into the database you can handle lost updates by restarting the

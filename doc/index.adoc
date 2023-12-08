@@ -31,7 +31,9 @@ ____
 
 
 include::instruction/readme.adoc[readme]
+// impl中进行总体介绍，在后面跟着对应的实现
 include::instruction/impl.adoc[impl]
+include::instruction/write_batch_impl.adoc[write_batch_impl]
 
 include::persistence/log_format.adoc[log_format]
 

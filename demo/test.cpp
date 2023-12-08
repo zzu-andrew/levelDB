@@ -14,18 +14,37 @@
 #include <set>
 #include <iostream>
 #include <cassert>
+#include <functional>
 #include "leveldb/write_batch.h"
 #include "leveldb/db.h"
 
 using namespace std;
 
+template<int max>
+class A {
 
-const uint64_t CREATE_SQL_STR_LEN = 1024 * 1024;
+private:
+    int m_a;
+};
+
+class B {
+public:
+
+
+private:
+    int m_b;
+};
+
+
 
 int main(int argc, char *argv[]) {
 
-    int *lpData = nullptr;
-    std::cout << sizeof(*lpData) << std::endl;
+    const std::set<int32_t>  data1;
+    const std::set<int32_t>  &data = data1;
+
+
+
+    std::end(data);
 
 
     return 0;
