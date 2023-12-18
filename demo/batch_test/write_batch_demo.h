@@ -17,6 +17,8 @@
  * */
 namespace WRITE_BATCH_DEMO {
 
+    // WriteBatch header has an 8-byte sequence number followed by a 4-byte count.
+    static const size_t kHeader = 12;
 
     class WriteBatch {
     public:
@@ -70,10 +72,6 @@ namespace WRITE_BATCH_DEMO {
     };
 
 }
-
-class write_batch_demo {
-
-};
 
 
 #endif //LEVELDB_WRITE_BATCH_DEMO_H

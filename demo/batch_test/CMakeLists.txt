@@ -6,7 +6,8 @@ cmake_minimum_required(VERSION 3.9)
 
 add_executable(write_batch
         write_batch_main.cpp
-        write_batch_demo.cpp)
+        write_batch_demo.cpp
+        write_batch_internal_demo.cpp)
 
 #target_link_libraries(test
 #        PUBLIC leveldb)
