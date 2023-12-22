@@ -10,9 +10,7 @@ WriteBatch::WriteBatch() {
     Clear();
 }
 
-WriteBatch::~WriteBatch() {
-
-}
+WriteBatch::~WriteBatch() = default;
 
 void WriteBatch::Put(const leveldb::Slice &key, const leveldb::Slice &value) {
 

@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     std::string * lpStr = &GetDatabase()[2];
 
 
-   std::cout << *lpStr <<  lpStr->size() << std::endl;
+    std::cout << *lpStr <<  lpStr->size() << std::endl;
 
     return 0;
 }
