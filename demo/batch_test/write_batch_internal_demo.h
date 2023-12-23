@@ -9,8 +9,6 @@
 
 namespace WRITE_BATCH_DEMO {
 
-
-
     // WriteBatchInternalDemo 提供static 函数用来处理 WriterBatchDemo，这里的函数是公用的
     // 但是我们又不想放到WriterBatchDemo的public里面，可以考虑使用这种方式
     class WriteBatchInternal {
