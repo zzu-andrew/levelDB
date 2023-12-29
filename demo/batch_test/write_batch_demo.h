@@ -24,7 +24,7 @@ namespace WRITE_BATCH_DEMO {
     public:
         class LEVELDB_EXPORT Handler {
         public:
-            virtual ~Handler();
+            virtual ~Handler() = default;
 
             virtual void Put(const leveldb::Slice &key, const leveldb::Slice &value) = 0;
 
