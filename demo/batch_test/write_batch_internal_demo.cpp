@@ -21,7 +21,7 @@ uint32_t WriteBatchInternal::Count(const WriteBatch *batch) {
 void WriteBatchInternal::SetCount(WriteBatch *batch, uint32_t n) {
     // 前面8byte sequence number
     // 这里和上边的去比啊，这里使用[]取值是因为[]取出的非const 引用
-    auto *const buffer =  reinterpret_cast<uint8_t *>(batch->rep_[8]);
+    auto *const buffer =  reinterpret_cast<uint8_t *>(&batch->rep_[8]);
     // 将uint32_t类型数据每8个字节存储到一个chat里面
     buffer[0] = static_cast<uint8_t>(n);
     buffer[1] = static_cast<uint8_t>(n >> 8);

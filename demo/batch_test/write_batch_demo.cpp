@@ -108,7 +108,7 @@ namespace WRITE_BATCH_DEMO {
 
 
     WriteBatch::WriteBatch() {
-        //Clear();
+        Clear();
     }
 
     WriteBatch::~WriteBatch() = default;
@@ -155,6 +155,7 @@ namespace WRITE_BATCH_DEMO {
         }
 
         // 2. 剔除序列化相关的无用数据
+        input.remove_prefix(kHeader);
         leveldb::Slice key, value;
         int32_t found = 0;
 
