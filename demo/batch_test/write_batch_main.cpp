@@ -7,7 +7,6 @@
 
 using namespace WRITE_BATCH_DEMO;
 
-
 class HandlerDemo : public WRITE_BATCH_DEMO::WriteBatch::Handler {
 public:
     ~HandlerDemo() override = default;
@@ -21,7 +20,6 @@ public:
 
     }
 };
-
 
 int main(int argc, char **argv) {
 

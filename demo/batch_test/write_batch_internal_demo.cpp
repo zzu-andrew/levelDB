@@ -27,7 +27,6 @@ void WriteBatchInternal::SetCount(WriteBatch *batch, uint32_t n) {
     buffer[1] = static_cast<uint8_t>(n >> 8);
     buffer[2] = static_cast<uint8_t>(n >> 16);
     buffer[3] = static_cast<uint8_t>(n >> 24);
-
 }
 
 leveldb::SequenceNumber WriteBatchInternal::Sequence(const WriteBatch *batch) {
@@ -68,10 +67,11 @@ void WriteBatchInternal::Append(WriteBatch *dst, const WriteBatch *src) {
     assert(src->rep_.size() >= kHeader);
     // 两个Writebatch合并时，需要剔除多于的头部信息， 4字节长度 + 8字节序列号
     dst->rep_.append(src->rep_.data() + kHeader, src->rep_.size() - kHeader);
-
 }
 
-leveldb::Status WriteBatchInternal::InsertInfo(const WriteBatch *batch) {
-
-    return leveldb::Status();
+// batch 通过迭代器接口调用的的事FraudIterate，而FraudIterate对象反过来调用lpFraud将具体的数据转移到lpFraud指向的对象里面
+leveldb::Status WriteBatchInternal::InsertInfo(const WriteBatch *batch, void * lpFraud) {
+    // FraudIterate 相当于一个壳，如果类比设计模式，这里用的就 桥接模式（Bridge Pattern）
+    FraudIterate inserter(lpFraud);
+    return batch->Iterate(&inserter);
 }

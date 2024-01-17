@@ -15,7 +15,9 @@ target_include_directories(leveldb_exec
 add_executable(test test.cpp)
 
 target_link_libraries(test
-        PUBLIC leveldb)
+        PUBLIC leveldb
+        PUBLIC stdc++
+        )
 
 target_include_directories(test
         PUBLIC ${PROJECT_SOURCE_DIR}/include)

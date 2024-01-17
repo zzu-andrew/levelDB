@@ -10,6 +10,9 @@
 #include "leveldb/slice.h"
 #include "leveldb/export.h"
 #include "leveldb/status.h"
+#include <iostream>
+
+
 
 /*
  * 对write_bach 进行重新实现，一般理解里面的实现原理

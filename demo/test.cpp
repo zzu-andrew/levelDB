@@ -19,36 +19,35 @@
 #include "leveldb/write_batch.h"
 #include "leveldb/db.h"
 
+#include <fstream>
+#include <iostream>
+#include <filesystem>
 
+#include <cstdlib> // 用于Windows上的_mkdir函数
+#include <sys/stat.h> // 用于Linux上的mkdir函数
 
 using namespace std;
 
 
-
-std::map<int32_t, std::string> GetDatabase() {
-
-    std::map<int32_t, std::string> temp;
-
-
-    temp[0] = "123";
-    temp[1] = "123";
-    temp[2] = "123";
-    temp[3] = "123";
-    temp[4] = "123";
-    temp[5] = "123";
-    temp[6] = "123";
-    temp[7] = "123";
-    return temp;
-}
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <string>
 
 
+int main() {
 
-int main(int argc, char *argv[]) {
+    char *lpStr = "abcd";
 
-    std::string * lpStr = &GetDatabase()[2];
+    std::cout << *(lpStr) << std::endl;
+    lpStr++;
+    std::cout << *(lpStr) << std::endl;
+    lpStr++;
+    std::cout << *(lpStr) << std::endl;lpStr++;
+    std::cout << *(lpStr) << std::endl;
 
 
-    std::cout << *lpStr <<  lpStr->size() << std::endl;
 
+    std::cout << "All files moved successfully." << std::endl;
     return 0;
 }

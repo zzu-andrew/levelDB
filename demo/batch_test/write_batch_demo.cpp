@@ -55,14 +55,19 @@ namespace WRITE_BATCH_DEMO {
     // 解码
     const char *GetVarint32PtrFallback(const char *p, const char *limit,
                                        uint32_t *value) {
+        // 定义一个uint32_t的值用来接收长度数据
         uint32_t result = 0;
         for (uint32_t shift = 0; shift <= 28 && p < limit; shift += 7) {
+            // 先取出一个字节
             uint32_t byte = *(reinterpret_cast<const uint8_t *>(p));
             p++;
+            // 如果最高位为 1 说明后面还有长度字节
             if (byte & 128) {
                 // More bytes are present
+                // 取出7位用来表示长度，并将其填充到result对应的位上
                 result |= ((byte & 127) << shift);
             } else {
+                // 能走到这里说明该字节的最高位为0，说明长度编码字段到这里已经结束，只需要将该字节的7位取走填充到result对应的位置上即可
                 result |= (byte << shift);
                 *value = result;
                 return reinterpret_cast<const char *>(p);
@@ -73,8 +78,12 @@ namespace WRITE_BATCH_DEMO {
 
     inline const char *GetVarint32Ptr(const char *p, const char *limit,
                                       uint32_t *value) {
+        // 保证指针合法
         if (p < limit) {
             uint32_t result = *(reinterpret_cast<const uint8_t *>(p));
+            // 处理比较特殊的情况，也就是首个字符最高位为0，这种也最为常见，所以单独拿出来处理
+            // 能有效提升处理速度
+            // 当首个字符最高位为0，说明长度是小于2^7的值，这个时候长度就是首字节的值，数据开始的地方就是首个字节之后的地方
             if ((result & 128) == 0) {
                 *value = result;
                 return p + 1;
@@ -84,12 +93,16 @@ namespace WRITE_BATCH_DEMO {
     }
 
     bool GetVarint32(leveldb::Slice *input, uint32_t *value) {
+        // 1. 去除头指针
         const char *p = input->data();
+        // 2. 去除尾指针
         const char *limit = p + input->size();
+        // 3. 解码出长度字段，并返回指向数据字段开始的指针
         const char *q = GetVarint32Ptr(p, limit, value);
         if (q == nullptr) {
             return false;
         } else {
+            // 去除长度字段组成一个新的Slice并将其赋值给input
             *input = leveldb::Slice(q, limit - q);
             return true;
         }
@@ -97,8 +110,11 @@ namespace WRITE_BATCH_DEMO {
 
     bool GetLengthPrefixedSlice(leveldb::Slice *input, leveldb::Slice *result) {
         uint32_t len;
+        // 1. 先获取出来数据长度
         if (WRITE_BATCH_DEMO::GetVarint32(input, &len) && input->size() >= len) {
+            // 2. 根据长度字段从input中取出指定长度，构造出一个新的slice然后赋值给result指向的对象
             *result = leveldb::Slice(input->data(), len);
+            // 3. input中剔除对应长度的数据
             input->remove_prefix(len);
             return true;
         } else {
@@ -146,20 +162,21 @@ namespace WRITE_BATCH_DEMO {
 
     // 通过，Handler将具体业务和实现分离开来，这样WriteBatch就不需要关心具体业务的东西
     // 只需要处理序列化的Put和Get即可，具体的功能交给Handler实现
+    // 说明：这里只是一个伪事务处理器。如果是一个真正的事务处理器，当执行过程中出现问题，事务处理能将执行的过程逆行执行一遍，将数据库恢复成原来的状态
     leveldb::Status WriteBatch::Iterate(Handler *handler) const {
         // 1. 将rep_ 转化为 Slice切片以备后面使用
         leveldb::Slice input(rep_);
-
+        // 2. 保证slice肯定要大于头部编码，否则说明当前的rep_ 的值是异常的
         if (input.size() < kHeader) {
             return leveldb::Status::Corruption("malformed WriteBatch (too small)");
         }
 
-        // 2. 剔除序列化相关的无用数据
+        // 3. 剔除序列化相关的无用数据
         input.remove_prefix(kHeader);
         leveldb::Slice key, value;
         int32_t found = 0;
 
-        // 3. 循环处理所有rep_中的事务(key value值)
+        // 4. 循环处理所有rep_中的事务(key value值)
         while (!input.empty()) {
             // 执行次数增加
             found ++;
