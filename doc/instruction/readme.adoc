@@ -157,7 +157,7 @@ if (!s.ok()) cerr << s.ToString() << endl;
 ----
 
 
-== 如何关闭一个levelDB数据库
+=== 如何关闭一个levelDB数据库
 
 当想关闭一个levelDB数据库时只需要调用delete将db删除即可。
 
@@ -168,7 +168,7 @@ if (!s.ok()) cerr << s.ToString() << endl;
 delete db;
 ----
 
-== 数据库的读写
+=== 数据库的读写
 
 levelDB提供了Put/Delete/Get等接口来对数据库进行操作。
 
@@ -183,7 +183,7 @@ if (s.ok()) s = db->Put(leveldb::WriteOptions(), key2, value);
 if (s.ok()) s = db->Delete(leveldb::WriteOptions(), key1);
 ----
 
-== 原子操作(事务类型)
+=== 原子操作(事务类型)
 
 [listing]
 ....
@@ -208,7 +208,7 @@ if (s.ok()) {
 
 WriteBatch将一些列动作封装成一个原子操作，当需要对数据库进行多次修改时，可以将这些操作封装成一个batch，这样能有效加快这些更改。
 
-== 同步写
+=== 同步写
 
 每次levelDB的写操作其实都是异步的，当调用完系统接口之后接口就会返回，这时文件只是到系统内存并没有进行持久化，但是系统内存到真正的持久化之间是异步执行的。当需要接口同步写时可以将sync flag设置给put的WriteOptions，这样就能保证接口返回之前已经将值都写入到持久化文件里了。(在UNIX系统上是通过在写操作返回之前调用`fsync(...)` or `fdatasync(...)` or `msync(..., MS_SYNC)`等接口实现。)
 
@@ -221,19 +221,11 @@ db->Put(write_options, ...);
 
 异步写的速度是同步写的千倍左右，异步写的问题就是系统崩溃时可能会丢失部分数据。
 
-Asynchronous writes can often be used safely. For example, when loading a large
-amount of data into the database you can handle lost updates by restarting the
-bulk load after a crash. A hybrid scheme is also possible where every Nth write
-is synchronous, and in the event of a crash, the bulk load is restarted just
-after the last synchronous write finished by the previous run. (The synchronous
-write can update a marker that describes where to restart on a crash.)
+当然通过适当的操作，异步写入也能变的安全，当你大量加载数据到数据库时，如果加载过程中系统崩溃，你可以通过重启批量加载来处理数据丢失的问题。如果每次崩溃都要重启批量加载，那样将会有大量的重复数据被处理，因此可以采用混合加载，每隔一段时间使用一次同步加载，因为同步加载肯定是加载成功才返回，因此一旦发生崩溃，只需要最新的一次同步加载处重新开始即可。
 
-`WriteBatch` provides an alternative to asynchronous writes. Multiple updates
-may be placed in the same WriteBatch and applied together using a synchronous
-write (i.e., `write_options.sync` is set to true). The extra cost of the
-synchronous write will be amortized across all of the writes in the batch.
+`WriteBatch` 是否异步写入log file可以通过 `write_options.sync`来实现控制，只要将 `sync`表级置为true，那么 `WriteBatch`将会按照直接写入文件的方式运行。
 
-## Concurrency
+=== 并发
 
 A database may only be opened by one process at a time. The leveldb
 implementation acquires a lock from the operating system to prevent misuse.
@@ -246,7 +238,7 @@ synchronization. If two threads share such an object, they must protect access
 to it using their own locking protocol. More details are available in the public
 header files.
 
-## Iteration
+=== Iteration
 
 The following example demonstrates how to print all key,value pairs in a
 database.
@@ -280,7 +272,7 @@ for (it->SeekToLast(); it->Valid(); it->Prev()) {
 }
 ```
 
-## Snapshots
+=== Snapshots
 
 Snapshots provide consistent read-only views over the entire state of the
 key-value store.  `ReadOptions::snapshot` may be non-NULL to indicate that a
@@ -304,7 +296,7 @@ Note that when a snapshot is no longer needed, it should be released using the
 `DB::ReleaseSnapshot` interface. This allows the implementation to get rid of
 state that was being maintained just to support reading as of that snapshot.
 
-## Slice
+=== Slice
 
 The return value of the `it->key()` and `it->value()` calls above are instances
 of the `leveldb::Slice` type. Slice is a simple structure that contains a length
@@ -347,7 +339,7 @@ Use(slice);
 When the if statement goes out of scope, str will be destroyed and the backing
 storage for slice will disappear.
 
-## Comparators
+=== Comparators
 
 The preceding examples used the default ordering function for key, which orders
 bytes lexicographically. You can however supply a custom comparator when opening
@@ -392,7 +384,7 @@ leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 ...
 ```
 
-### Backwards compatibility
+=== Backwards compatibility
 
 The result of the comparator's Name method is attached to the database when it
 is created, and is checked on every subsequent database open. If the name
@@ -409,12 +401,12 @@ new key format (e.g., adding an optional third part to the keys processed by
 version number for new keys (c) change the comparator function so it uses the
 version numbers found in the keys to decide how to interpret them.
 
-## Performance
+=== Performance
 
 Performance can be tuned by changing the default values of the types defined in
 `include/options.h`.
 
-### Block size
+==== Block size
 
 leveldb groups adjacent keys together into the same block and such a block is
 the unit of transfer to and from persistent storage. The default block size is
@@ -426,7 +418,7 @@ benefit in using blocks smaller than one kilobyte, or larger than a few
 megabytes. Also note that compression will be more effective with larger block
 sizes.
 
-### Compression
+==== Compression
 
 Each block is individually compressed before being written to persistent
 storage. Compression is on by default since the default compression method is
@@ -440,7 +432,7 @@ options.compression = leveldb::kNoCompression;
 ... leveldb::DB::Open(options, name, ...) ....
 ```
 
-### Cache
+==== Cache
 
 The contents of the database are stored in a set of files in the filesystem and
 each file stores a sequence of compressed blocks. If options.block_cache is
@@ -476,7 +468,7 @@ for (it->SeekToFirst(); it->Valid(); it->Next()) {
 }
 ```
 
-### Key Layout
+==== Key Layout
 
 Note that the unit of disk transfer and caching is a block. Adjacent keys
 (according to the database sort order) will usually be placed in the same block.
@@ -494,7 +486,7 @@ We might want to prefix filename keys with one letter (say '/') and the
 `file_block_id` keys with a different letter (say '0') so that scans over just
 the metadata do not force us to fetch and cache bulky file contents.
 
-### Filters
+==== Filters
 
 Because of the way leveldb data is organized on disk, a single `Get()` call may
 involve multiple reads from disk. The optional FilterPolicy mechanism can be
@@ -552,7 +544,7 @@ Advanced applications may provide a filter policy that does not use a bloom
 filter but uses some other mechanism for summarizing a set of keys. See
 `leveldb/filter_policy.h` for detail.
 
-## Checksums
+==== Checksums
 
 leveldb associates checksums with all data it stores in the file system. There
 are two separate controls provided over how aggressively these checksums are
@@ -573,7 +565,7 @@ If a database is corrupted (perhaps it cannot be opened when paranoid checking
 is turned on), the `leveldb::RepairDB` function may be used to recover as much
 of the data as possible
 
-## Approximate Sizes
+=== Approximate Sizes
 
 The `GetApproximateSizes` method can used to get the approximate number of bytes
 of file system space used by one or more key ranges.
@@ -590,7 +582,7 @@ The preceding call will set `sizes[0]` to the approximate number of bytes of
 file system space used by the key range `[a..c)` and `sizes[1]` to the
 approximate number of bytes used by the key range `[x..z)`.
 
-## Environment
+=== Environment
 
 All file operations (and other operating system calls) issued by the leveldb
 implementation are routed through a `leveldb::Env` object. Sophisticated clients
@@ -609,7 +601,7 @@ options.env = &env;
 Status s = leveldb::DB::Open(options, ...);
 ```
 
-## Porting
+=== Porting
 
 leveldb may be ported to a new platform by providing platform specific
 implementations of the types/methods/functions exported by
@@ -618,7 +610,7 @@ implementations of the types/methods/functions exported by
 In addition, the new platform may need a new default `leveldb::Env`
 implementation.  See `leveldb/util/env_posix.h` for an example.
 
-## Other Information
+=== Other Information
 
 Details about the leveldb implementation may be found in the following
 documents:

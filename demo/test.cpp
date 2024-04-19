@@ -16,6 +16,8 @@
 #include <cassert>
 #include <functional>
 #include <map>
+#include <vector>
+
 #include "leveldb/write_batch.h"
 #include "leveldb/db.h"
 
@@ -34,17 +36,23 @@ using namespace std;
 #include <filesystem>
 #include <string>
 
+enum class MyEnum : int32_t {
+    VALUE1,
+    VALUE2,
+    VALUE3
+};
+
+
+
+void Show(int32_t data) {}
 
 int main() {
 
-    char *lpStr = "abcd";
+    std::vector<char> data;
 
-    std::cout << *(lpStr) << std::endl;
-    lpStr++;
-    std::cout << *(lpStr) << std::endl;
-    lpStr++;
-    std::cout << *(lpStr) << std::endl;lpStr++;
-    std::cout << *(lpStr) << std::endl;
+    data.reserve(1000);
+    data.insert(data.end(),)
+
 
 
 
