@@ -23,9 +23,8 @@ ifndef::rootpath[]
 endif::rootpath[]
 
 
+== leveldb Log format
 
-leveldb Log format
-==================
 The log file contents are a sequence of 32KB blocks.  The only exception is that
 the tail of the file may contain a partial block.
 
@@ -80,7 +79,7 @@ bytes free in the third block, which will be left empty as the trailer.
 
 
 
-## Some benefits over the recordio format:
+=== Some benefits over the recordio format:
 
 1. We do not need any heuristics for resyncing - just go to next block boundary
    and scan.  If there is a corruption, skip to the next block.  As a
@@ -92,7 +91,7 @@ bytes free in the third block, which will be left empty as the trailer.
 
 3. We do not need extra buffering for large records.
 
-## Some downsides compared to recordio format:
+=== Some downsides compared to recordio format:
 
 1. No packing of tiny records.  This could be fixed by adding a new record type,
    so it is a shortcoming of the current implementation, not necessarily the

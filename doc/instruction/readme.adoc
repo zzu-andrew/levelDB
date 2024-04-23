@@ -227,21 +227,14 @@ db->Put(write_options, ...);
 
 === 并发
 
-A database may only be opened by one process at a time. The leveldb
-implementation acquires a lock from the operating system to prevent misuse.
-Within a single process, the same `leveldb::DB` object may be safely shared by
-multiple concurrent threads. I.e., different threads may write into or fetch
-iterators or call Get on the same database without any external synchronization
-(the leveldb implementation will automatically do the required synchronization).
-However other objects (like Iterator and `WriteBatch`) may require external
-synchronization. If two threads share such an object, they must protect access
-to it using their own locking protocol. More details are available in the public
-header files.
+一个数据库在同一时刻只能被一个进程打开。LevelDB 通过从操作系统获取锁来防止误用。
+在单个进程中，同一个 `leveldb::DB` 对象可以被多个并发线程安全地共享。也就是说，不同的线程可以无需任何外部同步（LevelDB 实现将自动完成所需同步）地对同一数据库进行写入、获取迭代器或调用 Get 方法。
+
+然而，其他对象（如 Iterator 和 `WriteBatch`）可能需要外部同步。如果两个线程共享这样的对象，它们必须使用自己的锁定协议来保护对该对象的访问。更多详情可在公共头文件中找到。
 
 === Iteration
 
-The following example demonstrates how to print all key,value pairs in a
-database.
+下面的示例演示了如何使用迭代器打印数据库中所有的key和value
 
 ```c++
 leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
@@ -618,4 +611,15 @@ documents:
 1. [Implementation notes](impl.md)
 2. [Format of an immutable Table file](table_format.md)
 3. [Format of a log file](log_format.md)
+
+
+
+1. 消费组中消费实例的加入和退出
+2. 消费者协调器对消费实例主题分区的动态调整
+3. 消费偏移量的管理
+4. mc集群成员的变更处理
+
+
+
+
 

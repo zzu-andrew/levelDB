@@ -31,31 +31,50 @@
 using namespace std;
 
 
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <string>
+struct ConsumptionOffset {
+    std::map<TopicName, std::map<PatitionNo, Offset>> consumeOffsets;   // 单个消费者组偏移量信息
+};
 
-enum class MyEnum : int32_t {
-    VALUE1,
-    VALUE2,
-    VALUE3
+struct ConsumerInfo {
+    std::map<TopicName, std::vector<partitionNo>>  consumerTopics; // 消费主题信息
+    uint64_t    arbVersion; //< 消费者仲裁版本号
+}
+
+struct ConsumerCoordinatorInfo {
+    std::map<ConsumerInstanceId, ConsumerInfo> consumerCoordinatorResults; //< 消费协调结果
+};
+
+class ConsumerCoordinator {
+public:
+    ConsumerCoordinator(std::string &groupId, ConsumerCoordinatorInfo &consumerCoordinatorInfo) {}
+    // 新增消费者
+    int32_t AddConsumer();
+    // 减少消费者
+    int32_t DeleteConsumer();
+    // 网络中断
+    int32_t NetworkDisconnected();
+
+
+
+private:
+    std::string m_groupId; //< 消费者组 uuid
+    ConsumerCoordinatorInfo m_consumerInfo; //<  消费者实例id <==> 消费者实例消费分配方案
+
+};
+
+
+class ConsumerCoordinatorOffsetMng {
+public:
+    uint64_t GetOffset(std::string& groupId, std::string& topicName, int32_t partitionNo) { }
+
+private:
+    std::map<GroupId, ConsumptionOffset>  m_consumerrCoordinatorOffset; //< GroupId <==> ConsumerCoordinatorOffset
 };
 
 
 
-void Show(int32_t data) {}
-
 int main() {
 
-    std::vector<char> data;
 
-    data.reserve(1000);
-    data.insert(data.end(),)
-
-
-
-
-    std::cout << "All files moved successfully." << std::endl;
     return 0;
 }
