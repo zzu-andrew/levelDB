@@ -1161,6 +1161,7 @@ namespace leveldb {
     }
 
     Iterator *DBImpl::NewIterator(const ReadOptions &options) {
+        // 序列号
         SequenceNumber latest_snapshot;
         uint32_t seed;
         Iterator *iter = NewInternalIterator(options, &latest_snapshot, &seed);

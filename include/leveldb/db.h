@@ -90,12 +90,10 @@ namespace leveldb {
         virtual Status Get(const ReadOptions &options, const Slice &key,
                            std::string *value) = 0;
 
-        // Return a heap-allocated iterator over the contents of the database.
-        // The result of NewIterator() is initially invalid (caller must
-        // call one of the Seek methods on the iterator before using it).
-        //
-        // Caller should delete the iterator when it is no longer needed.
-        // The returned iterator should be deleted before this db is deleted.
+        // 返回一个在堆上申请，迭代器中包含数据库所有的内容
+        // 需要注意的是NewIterator返回的迭代器指向是非法的，因此在正常使用在使用迭代器时，
+        // 必须先调用一下Seek方法
+        // 当迭代器不在使用时，需要进行及时删除，并且删除需要保证在数据库删除之前
         virtual Iterator *NewIterator(const ReadOptions &options) = 0;
 
         // Return a handle to the current DB state.  Iterators created with

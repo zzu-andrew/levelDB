@@ -22,6 +22,8 @@ target_link_libraries(test
 target_include_directories(test
         PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
+add_executable(list
+        list/tail_list.cpp)
 
 # 添加各个算法测试代码
 add_subdirectory(batch_test)

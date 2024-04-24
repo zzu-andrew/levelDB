@@ -64,6 +64,34 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // 使用迭代器去除数据库中所有的数据
+    leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
+    for (it->SeekToFirst(); it->Valid(); it->Next()) {
+        cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
+    }
+    assert(it->status().ok());  // Check for any errors found during the scan
+
+    std::cout << "==================================" << std::endl;
+    // 定位都 4开头的，然后指向该值
+    for (it->Seek("4");
+         it->Valid()/* && it->key().ToString() < "5"*/;
+         it->Next()) {
+        cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
+    }
+    // 反向迭代
+    for (it->SeekToLast(); it->Valid(); it->Prev()) {
+        cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
+    }
+
+    delete it;
+
+    // 为数据库创建快照
+    leveldb::ReadOptions readOptions;
+    readOptions.snapshot = db->GetSnapshot();
+    leveldb::Iterator* iter = db->NewIterator(readOptions);
+    delete iter;
+    db->ReleaseSnapshot(readOptions.snapshot);
+
     // 数据库不使用的时候记得及时清除
     delete db;
 

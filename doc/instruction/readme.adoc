@@ -245,8 +245,7 @@ assert(it->status().ok());  // Check for any errors found during the scan
 delete it;
 ```
 
-The following variation shows how to process just the keys in the range
-[start,limit):
+Seek可以查询某个值，并将迭代器指向该值，通过限定范围可以查询一定范围内的数据[start,limit):
 
 ```c++
 for (it->Seek(start);
@@ -266,14 +265,12 @@ for (it->SeekToLast(); it->Valid(); it->Prev()) {
 ```
 
 === Snapshots
+通过方法 `DB::GetSnapshot()` 可以创建 `leveldb` 数据库的快照
 
-Snapshots provide consistent read-only views over the entire state of the
-key-value store.  `ReadOptions::snapshot` may be non-NULL to indicate that a
-read should operate on a particular version of the DB state. If
-`ReadOptions::snapshot` is NULL, the read will operate on an implicit snapshot
-of the current state.
+快照为键值存储提供了一个只读的视图，当 `ReadOptions::snapshot` 非空时代表一个指定版本数据库状态视图。如果 `ReadOptions::snapshot` 为空，读取的数据将从隐式快照中获取。
 
-Snapshots are created by the `DB::GetSnapshot()` method:
+“implicit snapshot”是指在用户未明确指定快照的情况下，数据库系统自动为读操作创建并使用的一个代表当前数据库状态的临时快照，以提供数据一致性保障。这种机制免去了用户手动管理快照的复杂性，适用于大多数常规查询场景。
+
 
 ```c++
 leveldb::ReadOptions options;
