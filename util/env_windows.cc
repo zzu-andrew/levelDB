@@ -760,6 +760,7 @@ namespace leveldb {
                               "env_storage_ will not fit the Env");
                 static_assert(alignof(decltype(env_storage_)) >= alignof(EnvType),
                               "env_storage_ does not meet the Env's alignment needs");
+                // std::aligned_storage<sizeof(EnvType), alignof(EnvType)>::type 保证了内存大小刚好是 EnvType 大小
                 new(&env_storage_) EnvType();
             }
 

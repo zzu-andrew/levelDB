@@ -137,6 +137,7 @@ namespace leveldb {
         // (which must belong to the DB that is being read and which must
         // not have been released).  If "snapshot" is null, use an implicit
         // snapshot of the state at the beginning of this read operation.
+        // 内部存了一个uint64_t类型的序列号
         const Snapshot *snapshot = nullptr;
     };
 

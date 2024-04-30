@@ -28,52 +28,52 @@
 #include <cstdlib> // 用于Windows上的_mkdir函数
 #include <sys/stat.h> // 用于Linux上的mkdir函数
 
+
+#include <optional>
+#include <string>
+#include <iostream>
+
 using namespace std;
 
 
-struct ConsumptionOffset {
-    std::map<TopicName, std::map<PatitionNo, Offset>> consumeOffsets;   // 单个消费者组偏移量信息
-};
-
-struct ConsumerInfo {
-    std::map<TopicName, std::vector<partitionNo>>  consumerTopics; // 消费主题信息
-    uint64_t    arbVersion; //< 消费者仲裁版本号
-}
-
-struct ConsumerCoordinatorInfo {
-    std::map<ConsumerInstanceId, ConsumerInfo> consumerCoordinatorResults; //< 消费协调结果
-};
-
-class ConsumerCoordinator {
+template<typename EnvType>
+class SingletonEnv {
 public:
-    ConsumerCoordinator(std::string &groupId, ConsumerCoordinatorInfo &consumerCoordinatorInfo) {}
-    // 新增消费者
-    int32_t AddConsumer();
-    // 减少消费者
-    int32_t DeleteConsumer();
-    // 网络中断
-    int32_t NetworkDisconnected();
+    SingletonEnv() {
+        static_assert(sizeof(env_storage_) >= sizeof(EnvType),
+                      "env_storage_ will not fit the Env");
+        static_assert(alignof(decltype(env_storage_)) >= alignof(EnvType),
+                      "env_storage_ does not meet the Env's alignment needs");
+        // std::aligned_storage<sizeof(EnvType), alignof(EnvType)>::type 保证了内存大小刚好是 EnvType 大小
+        new(&env_storage_) EnvType();
+    }
 
+    ~SingletonEnv() = default;
 
+    SingletonEnv(const SingletonEnv &) = delete;
+
+    SingletonEnv &operator=(const SingletonEnv &) = delete;
+
+    Env *env() { return reinterpret_cast<Env *>(&env_storage_); }
+
+    static void AssertEnvNotInitialized() {
+    }
 
 private:
-    std::string m_groupId; //< 消费者组 uuid
-    ConsumerCoordinatorInfo m_consumerInfo; //<  消费者实例id <==> 消费者实例消费分配方案
-
+    typename std::aligned_storage<sizeof(EnvType), alignof(EnvType)>::type
+            env_storage_;
 };
 
 
-class ConsumerCoordinatorOffsetMng {
-public:
-    uint64_t GetOffset(std::string& groupId, std::string& topicName, int32_t partitionNo) { }
-
-private:
-    std::map<GroupId, ConsumptionOffset>  m_consumerrCoordinatorOffset; //< GroupId <==> ConsumerCoordinatorOffset
-};
 
 
 
 int main() {
+    Derived derived;
+    derived.a();
+
+    derived.name = 12;
+
 
 
     return 0;

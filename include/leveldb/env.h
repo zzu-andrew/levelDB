@@ -344,15 +344,13 @@ namespace leveldb {
     LEVELDB_EXPORT Status ReadFileToString(Env *env, const std::string &fname,
                                            std::string *data);
 
-// An implementation of Env that forwards all calls to another Env.
-// May be useful to clients who wish to override just part of the
-// functionality of another Env.
+// 封装Env， 将Env的接实现转发给另外一个Env，该方法常用于接口适配，或者仅需要暴漏部分接口给对方时才使用该封装方法
     class LEVELDB_EXPORT EnvWrapper : public Env {
     public:
         // Initialize an EnvWrapper that delegates all calls to *t.
         explicit EnvWrapper(Env *t) : target_(t) {}
 
-        virtual ~EnvWrapper();
+        ~EnvWrapper() override;
 
         // Return the target to which this Env forwards all calls.
         Env *target() const { return target_; }

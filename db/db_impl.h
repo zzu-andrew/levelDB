@@ -219,7 +219,7 @@ namespace leveldb {
         bool background_compaction_scheduled_ GUARDED_BY(mutex_);
 
         ManualCompaction *manual_compaction_ GUARDED_BY(mutex_);
-
+        // GUARDED_BY(mutex_); clang中用于编译器的静态检查
         VersionSet *const versions_ GUARDED_BY(mutex_);
 
         // Have we encountered a background error in paranoid mode?

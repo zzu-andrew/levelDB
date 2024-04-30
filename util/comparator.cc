@@ -18,6 +18,7 @@ namespace leveldb {
     Comparator::~Comparator() = default;
 
     namespace {
+        // 按照字节顺序Slice中的数据进行对比
         class BytewiseComparatorImpl : public Comparator {
         public:
             BytewiseComparatorImpl() = default;
@@ -27,7 +28,7 @@ namespace leveldb {
             int Compare(const Slice &a, const Slice &b) const override {
                 return a.compare(b);
             }
-
+            // 找出共同前缀
             void FindShortestSeparator(std::string *start,
                                        const Slice &limit) const override {
                 // Find length of common prefix

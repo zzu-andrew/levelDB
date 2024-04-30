@@ -96,14 +96,11 @@ namespace leveldb {
         // 当迭代器不在使用时，需要进行及时删除，并且删除需要保证在数据库删除之前
         virtual Iterator *NewIterator(const ReadOptions &options) = 0;
 
-        // Return a handle to the current DB state.  Iterators created with
-        // this handle will all observe a stable snapshot of the current DB
-        // state.  The caller must call ReleaseSnapshot(result) when the
-        // snapshot is no longer needed.
+        // 返回数据库的快照，使用该句柄创建的迭代器总是拿取的是稳定版本的快照。
+        // 调用者必须嗲用ReleaseSnapshot来释放快照句柄
         virtual const Snapshot *GetSnapshot() = 0;
 
-        // Release a previously acquired snapshot.  The caller must not
-        // use "snapshot" after this call.
+        // 释放快照，调用该接口之后，被释放的快照不能再被使用
         virtual void ReleaseSnapshot(const Snapshot *snapshot) = 0;
 
         // DB implementations can export properties about their state

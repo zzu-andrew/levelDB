@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
     // 为数据库创建快照
     leveldb::ReadOptions readOptions;
     readOptions.snapshot = db->GetSnapshot();
+    // 这里创建的迭代器中缩影的数据是稳定版本的数据，而不是实时更新的值
     leveldb::Iterator* iter = db->NewIterator(readOptions);
     delete iter;
     db->ReleaseSnapshot(readOptions.snapshot);

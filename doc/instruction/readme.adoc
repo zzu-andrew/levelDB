@@ -236,33 +236,36 @@ db->Put(write_options, ...);
 
 下面的示例演示了如何使用迭代器打印数据库中所有的key和value
 
-```c++
+[source,c++]
+----
 leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
 for (it->SeekToFirst(); it->Valid(); it->Next()) {
   cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
 }
 assert(it->status().ok());  // Check for any errors found during the scan
 delete it;
-```
+----
 
 Seek可以查询某个值，并将迭代器指向该值，通过限定范围可以查询一定范围内的数据[start,limit):
 
-```c++
+[source,c++]
+----
 for (it->Seek(start);
    it->Valid() && it->key().ToString() < limit;
    it->Next()) {
   ...
 }
-```
+----
 
 You can also process entries in reverse order. (Caveat: reverse iteration may be
 somewhat slower than forward iteration.)
 
-```c++
+[source,c++]
+----
 for (it->SeekToLast(); it->Valid(); it->Prev()) {
   ...
 }
-```
+----
 
 === Snapshots
 通过方法 `DB::GetSnapshot()` 可以创建 `leveldb` 数据库的快照
@@ -271,8 +274,8 @@ for (it->SeekToLast(); it->Valid(); it->Prev()) {
 
 “implicit snapshot”是指在用户未明确指定快照的情况下，数据库系统自动为读操作创建并使用的一个代表当前数据库状态的临时快照，以提供数据一致性保障。这种机制免去了用户手动管理快照的复杂性，适用于大多数常规查询场景。
 
-
-```c++
+[source,c++]
+----
 leveldb::ReadOptions options;
 options.snapshot = db->GetSnapshot();
 ... apply some updates to db ...
@@ -280,64 +283,51 @@ leveldb::Iterator* iter = db->NewIterator(options);
 ... read using iter to view the state when the snapshot was created ...
 delete iter;
 db->ReleaseSnapshot(options.snapshot);
-```
+----
 
-Note that when a snapshot is no longer needed, it should be released using the
-`DB::ReleaseSnapshot` interface. This allows the implementation to get rid of
-state that was being maintained just to support reading as of that snapshot.
+当快照句柄不在需要时，需要及时调用 `DB::ReleaseSnapshot` 接口将其释放掉，这样为该快照保存的状态也会被同时释放掉。
 
 === Slice
 
-The return value of the `it->key()` and `it->value()` calls above are instances
-of the `leveldb::Slice` type. Slice is a simple structure that contains a length
-and a pointer to an external byte array. Returning a Slice is a cheaper
-alternative to returning a `std::string` since we do not need to copy
-potentially large keys and values. In addition, leveldb methods do not return
-null-terminated C-style strings since leveldb keys and values are allowed to
-contain `'\0'` bytes.
+在leveldb中实现了一个很像go语言里面的切片 `leveldb::Slice` 数据库迭代器中的 `it->key()` 和 `it->value()` 类型就是 `leveldb::Slice`，而且 `Slice` 实现了和C++字符串自建的简单转换。使用 `Slice` 的消耗非常小，也正是这样 `leveldb` 才能到处都是用 `Slice`，另外 `Slice` 除了消耗比较小外还能携带 `\0`。因此， `leveldb` 返回的 `key` 和 `value` 的值可能是携带 `\0` 的序列化字节流，而不是像C中以 `\0` 结尾的字符串。
 
-C++ strings and null-terminated C-style strings can be easily converted to a
-Slice:
-
-```c++
+.将string转化为Slice
+[source,c++]
+----
 leveldb::Slice s1 = "hello";
 
 std::string str("world");
 leveldb::Slice s2 = str;
-```
+----
 
-A Slice can be easily converted back to a C++ string:
-
-```c++
+.将Slice转化为string
+[source,c++]
+----
 std::string str = s1.ToString();
 assert(str == std::string("hello"));
-```
+----
 
-Be careful when using Slices since it is up to the caller to ensure that the
-external byte array into which the Slice points remains live while the Slice is
-in use. For example, the following is buggy:
+使用 `Slice` 一定要非常小心，因为 `Slice` 需要调用者保证引用字节的生命周期，千万不能出现 `Slice` 声明周期结束之前引用的内存已经释放了。
 
-```c++
+[source,c++]
+----
 leveldb::Slice slice;
 if (...) {
-  std::string str = ...;
-  slice = str;
+    // 这里定义的str在if体结束时会自动释放
+    std::string str = ...;
+    slice = str;
 }
+// Slice引用的内存已经失效
 Use(slice);
-```
+----
 
-When the if statement goes out of scope, str will be destroyed and the backing
-storage for slice will disappear.
 
 === Comparators
 
-The preceding examples used the default ordering function for key, which orders
-bytes lexicographically. You can however supply a custom comparator when opening
-a database.  For example, suppose each database key consists of two numbers and
-we should sort by the first number, breaking ties by the second number. First,
-define a proper subclass of `leveldb::Comparator` that expresses these rules:
+上述示例中字符串对比使用的默认对比器，默认对比器对比是按照字符串字典顺序进行对比的，当然根据需要你可以自定义对比函数来实现对数据的对比。
 
-```c++
+[source,c++]
+----
 class TwoPartComparator : public leveldb::Comparator {
  public:
   // Three-way comparison function:
@@ -360,11 +350,12 @@ class TwoPartComparator : public leveldb::Comparator {
   void FindShortestSeparator(std::string*, const leveldb::Slice&) const {}
   void FindShortSuccessor(std::string*) const {}
 };
-```
+----
 
-Now create a database using this custom comparator:
+使用自定义对比函数需要再打开数据库之前将对比器指定给comparator指针
 
-```c++
+[source,c++]
+----
 TwoPartComparator cmp;
 leveldb::DB* db;
 leveldb::Options options;
@@ -372,7 +363,7 @@ options.create_if_missing = true;
 options.comparator = &cmp;
 leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 ...
-```
+----
 
 === Backwards compatibility
 
@@ -416,11 +407,12 @@ very fast, and is automatically disabled for uncompressible data. In rare cases,
 applications may want to disable compression entirely, but should only do so if
 benchmarks show a performance improvement:
 
-```c++
+[source,c++]
+----
 leveldb::Options options;
 options.compression = leveldb::kNoCompression;
 ... leveldb::DB::Open(options, name, ...) ....
-```
+----
 
 ==== Cache
 
@@ -428,7 +420,8 @@ The contents of the database are stored in a set of files in the filesystem and
 each file stores a sequence of compressed blocks. If options.block_cache is
 non-NULL, it is used to cache frequently used uncompressed block contents.
 
-```c++
+[source,c++]
+----
 #include "leveldb/cache.h"
 
 leveldb::Options options;
@@ -438,7 +431,7 @@ leveldb::DB::Open(options, name, &db);
 ... use the db ...
 delete db
 delete options.block_cache;
-```
+----
 
 Note that the cache holds uncompressed data, and therefore it should be sized
 according to application level data sizes, without any reduction from
@@ -449,14 +442,15 @@ When performing a bulk read, the application may wish to disable caching so that
 the data processed by the bulk read does not end up displacing most of the
 cached contents. A per-iterator option can be used to achieve this:
 
-```c++
+[source,c++]
+----
 leveldb::ReadOptions options;
 options.fill_cache = false;
 leveldb::Iterator* it = db->NewIterator(options);
 for (it->SeekToFirst(); it->Valid(); it->Next()) {
   ...
 }
-```
+----
 
 ==== Key Layout
 
@@ -482,7 +476,8 @@ Because of the way leveldb data is organized on disk, a single `Get()` call may
 involve multiple reads from disk. The optional FilterPolicy mechanism can be
 used to reduce the number of disk reads substantially.
 
-```c++
+[source,c++]
+----
 leveldb::Options options;
 options.filter_policy = NewBloomFilterPolicy(10);
 leveldb::DB* db;
@@ -490,7 +485,7 @@ leveldb::DB::Open(options, "/tmp/testdb", &db);
 ... use the database ...
 delete db;
 delete options.filter_policy;
-```
+----
 
 The preceding code associates a Bloom filter based filtering policy with the
 database.  Bloom filter based filtering relies on keeping some number of bits of
@@ -508,7 +503,8 @@ comparator that ignores trailing spaces when comparing keys.
 application should provide a custom filter policy that also ignores trailing
 spaces. For example:
 
-```c++
+[source,c++]
+----
 class CustomFilterPolicy : public leveldb::FilterPolicy {
  private:
   FilterPolicy* builtin_policy_;
@@ -528,7 +524,7 @@ class CustomFilterPolicy : public leveldb::FilterPolicy {
     return builtin_policy_->CreateFilter(trimmed.data(), n, dst);
   }
 };
-```
+----
 
 Advanced applications may provide a filter policy that does not use a bloom
 filter but uses some other mechanism for summarizing a set of keys. See
@@ -560,13 +556,14 @@ of the data as possible
 The `GetApproximateSizes` method can used to get the approximate number of bytes
 of file system space used by one or more key ranges.
 
-```c++
+[source,c++]
+----
 leveldb::Range ranges[2];
 ranges[0] = leveldb::Range("a", "c");
 ranges[1] = leveldb::Range("x", "z");
 uint64_t sizes[2];
 db->GetApproximateSizes(ranges, 2, sizes);
-```
+----
 
 The preceding call will set `sizes[0]` to the approximate number of bytes of
 file system space used by the key range `[a..c)` and `sizes[1]` to the
@@ -580,7 +577,8 @@ may wish to provide their own Env implementation to get better control.
 For example, an application may introduce artificial delays in the file IO
 paths to limit the impact of leveldb on other activities in the system.
 
-```c++
+[source,c++]
+----
 class SlowEnv : public leveldb::Env {
   ... implementation of the Env interface ...
 };
@@ -589,7 +587,7 @@ SlowEnv env;
 leveldb::Options options;
 options.env = &env;
 Status s = leveldb::DB::Open(options, ...);
-```
+----
 
 === Porting
 
@@ -608,15 +606,6 @@ documents:
 1. [Implementation notes](impl.md)
 2. [Format of an immutable Table file](table_format.md)
 3. [Format of a log file](log_format.md)
-
-
-
-1. 消费组中消费实例的加入和退出
-2. 消费者协调器对消费实例主题分区的动态调整
-3. 消费偏移量的管理
-4. mc集群成员的变更处理
-
-
 
 
 

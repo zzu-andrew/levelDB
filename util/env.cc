@@ -22,6 +22,7 @@ namespace leveldb {
         return Status::NotSupported("NewAppendableFile", fname);
     }
 
+    // 这样写时为了保证该接口必须被重载，否则调用父类的Env将会进入到死循环
     Status Env::RemoveDir(const std::string &dirname) { return DeleteDir(dirname); }
 
     Status Env::DeleteDir(const std::string &dirname) { return RemoveDir(dirname); }
@@ -105,6 +106,6 @@ namespace leveldb {
         return s;
     }
 
-    EnvWrapper::~EnvWrapper() {}
+    EnvWrapper::~EnvWrapper() = default;
 
 }  // namespace leveldb
