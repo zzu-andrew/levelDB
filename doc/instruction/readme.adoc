@@ -367,45 +367,34 @@ leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 
 === Backwards compatibility
 
-The result of the comparator's Name method is attached to the database when it
-is created, and is checked on every subsequent database open. If the name
-changes, the `leveldb::DB::Open` call will fail. Therefore, change the name if
-and only if the new key format and comparison function are incompatible with
-existing databases, and it is ok to discard the contents of all existing
-databases.
+每个对比器都会有自己的名字，并且这个名字会绑定到其打开的数据库中，如果下次打开使用对比器和上次打开时对比器的名字不同 `leveldb::DB::Open()` 会返回调用失败。因此，只有新的键值格式和老的无法兼容时才会更改对比器名字，并且更改之后原有的数据库都需要进行废弃。
 
-You can however still gradually evolve your key format over time with a little
-bit of pre-planning. For example, you could store a version number at the end of
-each key (one byte should suffice for most uses). When you wish to switch to a
-new key format (e.g., adding an optional third part to the keys processed by
-`TwoPartComparator`), (a) keep the same comparator name (b) increment the
-version number for new keys (c) change the comparator function so it uses the
-version numbers found in the keys to decide how to interpret them.
+当然可以小心的对键进行演进，比如将最后一个字段作为版本使用，当需要进行键值切换时可以按照如下步骤进行：
 
-=== Performance
-
-Performance can be tuned by changing the default values of the types defined in
-`include/options.h`.
+1. 保持相同的比较器名称，这样即使键值格式发生变化，但是在数据库层面上仍然识别为同一个排序的逻辑
+2. 对于新生成的键值，递增版本号，每次新新创建键值时增加其版本号，这样就能用来区分久的版本号了。
+3. 修改比较器函数，让比较器支持带版本型号的键值对比。
 
 ==== Block size
 
-leveldb groups adjacent keys together into the same block and such a block is
-the unit of transfer to and from persistent storage. The default block size is
-approximately 4096 uncompressed bytes.  Applications that mostly do bulk scans
-over the contents of the database may wish to increase this size. Applications
-that do a lot of point reads of small values may wish to switch to a smaller
-block size if performance measurements indicate an improvement. There isn't much
-benefit in using blocks smaller than one kilobyte, or larger than a few
-megabytes. Also note that compression will be more effective with larger block
-sizes.
+LevelDB为了优化数据访问和存储效率，会将相邻的键值对组织成块（blocks），而这个块是与持久化存储之间交互的基本单位。默认情况下，每个块的大小大约是未压缩状态下的4096字节。
+
+针对不同应用场景，可以考虑调整块的大小：
+
+- 对于那些主要执行大量扫描操作的应用程序（即遍历数据库内容的应用），如果数据扫描操作频繁且数据量较大，可能需要增大块的大小，因为更大的块意味着更少的I/O次数，从而有可能提高整体扫描性能。
+
+- 而对于那些频繁执行小范围点查询（尤其是查询小尺寸值）的应用程序，如果性能测试显示较小的块大小可以提升查询速度，则可以考虑减小块大小。这是因为更小的块有助于更快地定位到所需的特定键值对，减少不必要的数据读取。
+
+然而，块的大小设置也有其限制：
+
+- 小于1KB的块大小可能不会带来显著的性能提升，反而可能由于过度碎片化而导致I/O开销增大。
+- 大于几兆字节的块大小则可能导致内存使用过高，尤其是在内存有限或者工作集较大的场景下。
+
+此外，值得注意的是，块压缩的效果通常随着块大小的增加而增强，因为更大块内的数据可能会有更高的冗余度，因此压缩率也可能会更高。因此，在调整块大小时，应综合考虑应用程序的访问模式、内存使用以及磁盘I/O效率，并结合实际的性能测试结果来做出最佳决策。
 
 ==== Compression
 
-Each block is individually compressed before being written to persistent
-storage. Compression is on by default since the default compression method is
-very fast, and is automatically disabled for uncompressible data. In rare cases,
-applications may want to disable compression entirely, but should only do so if
-benchmarks show a performance improvement:
+每个数据块在写入持久化存储之前都会被单独压缩，因为默认压缩方法非常快，因此系统默认开启压缩功能，对于那些无法压缩的数据，系统会禁用压缩功能。在极少数情况下程序可能会完全禁止压缩，但是这样做应当仅限于基准测试显示性能所有提升的情况下进行：
 
 [source,c++]
 ----

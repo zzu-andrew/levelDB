@@ -116,6 +116,7 @@ namespace leveldb {
                 // Ok
                 break;
             case kSnappyCompression: {
+                // 使用snappy压缩的数据需要先解压缩在使用，一下接口是port中对snappy接口的封装
                 size_t ulength = 0;
                 if (!port::Snappy_GetUncompressedLength(data, n, &ulength)) {
                     delete[] buf;
